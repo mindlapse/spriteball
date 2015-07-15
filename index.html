@@ -4,40 +4,239 @@
     <script src="threejs/three.min.js"></script>
 </head>
 <body>
+<style type="text/css">
+    body {
+        overflow:hidden;
+        margin:0;
+        padding:0;
+    }
+</style>
 <script>
 
     var scene, camera, renderer;
     var geometry, material, mesh;
+    var sphereCloud;
+    var X_AXIS = new THREE.Vector3( 1, 0, 0 );
+    var Y_AXIS = new THREE.Vector3( 0, 1, 0 );
+
+    var P2 = THREE.Vector2;
+    var M4 = THREE.Matrix4;
+
+    var TouchData = {
+        isTouched       : false,
+        lastTouchTime   : null,
+        lastTouchPoint  : new P2(0,0),
+        velocityInstant : null,
+        velocity        : null,
+
+        thisTouchPoint : new P2(0,0),
+// TODO Use intermediate vars to avoid cloning in SaveTouch        _thisPoint : new P2(0,0),
+// TODO        _diff : new P2(0,0);
+
+        saveTouch : function saveTouch(touchEvent) {
+            var touch = touchEvent.touches[0];
+            var now = new Date().getTime();
+            var pos = this.thisTouchPoint;
+            pos.x = touch.screenX;
+            pos.y = touch.screenY;
+
+            if (this.lastTouchTime != null) {
+                // The above if implies that lastTouchPoint is non-null
+                var timeDelta = now - this.lastTouchTime;
+                if (timeDelta > 100) {   // Go easy
+                    this.velocity = pos.clone().sub(this.lastTouchPoint).divideScalar(timeDelta/1000);
+                    this.lastTouchTime = now;
+                    this.lastTouchPoint.x = pos.x;
+                    this.lastTouchPoint.y = pos.y;
+                }
+            } else {
+                this.lastTouchTime = now;
+                this.lastTouchPoint.x = pos.x;
+                this.lastTouchPoint.y = pos.y;
+            }
+            if (this.velocity != null) {
+                console.log("TD: " + timeDelta + " VX " + this.velocity.x + " VY " + this.velocity.y);
+            }
+        },
+
+        onTouchStart : function onTouchStart(touch) {
+            this.isTouched = true;
+            this.saveTouch(touch);
+        },
+
+        onTouchMove : function onTouchMove(touch) {
+            this.saveTouch(touch);
+        },
+
+        onTouchEnd : function onTouchEnd(touch) {
+            this.reset();
+        },
+
+
+        getVelocity : function getVelocity() {
+            return (this.isTouched) ? this.velocity : 0;
+        },
+
+        reset : function reset() {
+            this.isTouched       = false;
+            this.lastTouchTime   = null;
+            this.velocityInstant = null;
+            this.velocity        = null;
+        }
+    };
+
+    var spriteBallCtrl = null;
+    SpriteBallController = (function SpriteBallController() {
+
+        var SWIPE_SPEED = 0.0001;
+
+        /*
+         * spriteBall   : A THREE.PointCloud
+         * dom          : The element to attach touch listeners
+         * touchData    : A TouchData that keeps track of touch data
+         * numPoints    : The number of points in the point cloud.
+         */
+        function SpriteBallController(spriteBall, dom, touchData, numPoints) {
+            this.spriteBall = spriteBall;
+            this.touchData = touchData;
+            this.numPoints = numPoints;
+            dom.addEventListener("touchstart",  function(touch) {
+                touchData.onTouchStart(touch);
+                console.dir(touchData.velocity);
+            });
+            dom.addEventListener("touchmove",   function(touch) {
+                touchData.onTouchMove(touch)
+                console.dir(touchData.velocity);
+            })
+            function onTouchEnd(touch) {
+                touchData.onTouchEnd(touch)
+                console.dir(touchData.velocity);
+            }
+            dom.addEventListener("touchend",    onTouchEnd);
+            dom.addEventListener("touchcancel", onTouchEnd);
+            dom.addEventListener("touchleave",  onTouchEnd);
+        }
+
+
+        SpriteBallController.prototype.applyForces = function applyForces() {
+            for
+        };
+
+        SpriteBallController.prototype.updateRotation = function updateRotation() {
+            var v = this.touchData.getVelocity();
+            if (v) {
+                var rotation = this.spriteBall.rotation;
+                /*
+                rotation.x += v.y * SWIPE_SPEED;
+                rotation.z += v.x * SWIPE_SPEED;
+                */
+
+//                var m = new M4();
+  //              m.makeRotationFromEuler(rotation);
+
+
+                var m = new M4();
+                m.makeRotationX(v.x * SWIPE_SPEED);
+                //m.makeRotationY(v.y * SWIPE_SPEED);
+                var e = new THREE.Euler(0,0,0).setFromRotationMatrix(m);
+                rotation.y += e.x;
+
+                m = new M4();
+                //m.makeRotationX(v.x * SWIPE_SPEED);
+                m.makeRotationY(v.y * SWIPE_SPEED);
+                var e = new THREE.Euler(0,0,0).setFromRotationMatrix(m);
+                rotation.x += e.y;
+
+
+
+                //rotation.x += e.y;
+                //rotation.z += e.z;
+
+                console.log("RX: " + rotation.x + " RY: " + rotation.y);
+            }
+        };
+
+        return SpriteBallController;
+    })();
 
     init();
     animate();
 
     function init() {
 
+
         scene = new THREE.Scene();
 
         camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
         camera.position.z = 1000;
 
+        /*
         geometry = new THREE.BoxGeometry( 200, 200, 200 );
         material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
 
         mesh = new THREE.Mesh( geometry, material );
         scene.add( mesh );
+        */
+        var NUM_OBJECTS = 1000;
+
+        var spriteBallPointCloud = buildSphere(scene, NUM_OBJECTS);
+
 
         renderer = new THREE.WebGLRenderer();
         renderer.setSize( window.innerWidth, window.innerHeight );
+        renderer.setClearColor(0xFFFFFF,1);
+        var dom = renderer.domElement;
 
-        document.body.appendChild( renderer.domElement );
+        spriteBallCtrl = new SpriteBallController(spriteBallPointCloud, dom, TouchData, NUM_OBJECTS);
+        document.body.appendChild( dom );
 
     }
+
+    function buildSphere(scene, numPoints) {
+        var RADIUS = 500;
+
+        var geo = new THREE.Geometry();
+        for (var i = 0; i < NUM_OBJECTS; i++) {
+            geo.vertices.push(getRandomPointOnSphere(RADIUS));
+        }
+        sphereCloud = new THREE.PointCloud(geo, new THREE.PointCloudMaterial({
+            color : 0x083858,
+            size: 10
+        }));
+        scene.add(sphereCloud);
+        return sphereCloud;
+    }
+
+
+    function getRandomPointOnSphere(radius) {
+        var p = X_AXIS.clone().applyAxisAngle(Y_AXIS, randomAngle());
+        p.applyAxisAngle(Y_AXIS.clone().cross(p), randomAngle());
+        p.multiplyScalar(radius);
+
+        return p;
+    }
+
+    function randomAngle() {
+        return 2*Math.PI * Math.random();
+    }
+
+    /*
+    function placeOnSphere(pointobj3d, xRot, yRot, radius) {
+        obj3d.rotateOnAxis( new THREE.Vector3(1,0,0), xRot);
+        obj3d.rotateOnAxis( new THREE.Vector3(0,1,0), yRot);
+        obj3d.translateX(radius);
+    }
+    */
 
     function animate() {
 
         requestAnimationFrame( animate );
 
-        mesh.rotation.x += 0.01;
-        mesh.rotation.y += 0.02;
+
+        spriteBallCtrl.updateRotation();;
+
+        var rotation = sphereCloud.rotation;
+        // rotation.x += 0.01; rotation.y += 0.02;
 
         renderer.render( scene, camera );
 
