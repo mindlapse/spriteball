@@ -126,13 +126,13 @@
 
         var Util = {
 
-            // Computes the angle between the two nonzero Vector3s
+            // Computes the angle between the two unit Vector3s
             getRadians : function getRadians(v3a, v3b) {
                 var dot = v3a.dot(v3b);
-                var arcDistance = Math.abs(Math.acos(dot / v3a.length() / v3b.length()) );
+                var arcDistance = Math.acos(dot);
 
-                if (arcDistance < .00001) {
-                    arcDistance = .00001;
+                if (arcDistance < .0001) {
+                    arcDistance = .0001;
                 }
 //                console.log("ad: " + arcDistance);
                 return arcDistance;
@@ -157,9 +157,8 @@
                 }
 
                 var len = W.length();
-                if (len > 0.001) {
-                    W.divideScalar(len);
-                    return W.clone();
+                if (len > 0.0001) {
+                    return W.clone().normalize();
                 } else {
                     return null;
                 }
@@ -173,7 +172,8 @@
             var points = this.spriteBall.geometry.vertices;
 
             for (var i = 0; i < points.length; i++) {
-                var point = points[i];
+                var point = points[i].clone().normalize();
+//                if (i != 0) continue;
 
                 var netForce = new V3();
 
@@ -181,7 +181,8 @@
 
                     if (i == k) continue;
 
-                    var otherPoint = points[k];
+                    var otherPoint = points[k].clone().normalize();
+
 
                     // For each point pair calculate the radians between them,
                     // this is the distance between them on the sphere.
@@ -191,7 +192,7 @@
                     var w = Util.getShortCircleDirection(point, otherPoint);
 
                     if (w != null) {
-                        netForce.add(w.multiplyScalar(arcDistance));
+                        netForce.add(w.multiplyScalar(Math.PI/arcDistance));
                     }
                 }
 
@@ -201,7 +202,8 @@
                 var forceMagnitude = netForce.length();
 
 //                console.log("Force: " + forceMagnitude);
-                point.applyAxisAngle(forcePlaneAxis, -forceMagnitude/100).normalize().multiplyScalar(this.radius);    // TODO should this be negative?
+                point.applyAxisAngle(forcePlaneAxis, Math.min(Math.PI/80,forceMagnitude/100000)).normalize().multiplyScalar(this.radius);    // TODO should this be negative?
+                points[i] = point;
                 //console.log(forceMagnitude);
             }
             this.spriteBall.geometry.verticesNeedUpdate = true;
