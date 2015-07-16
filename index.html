@@ -98,6 +98,46 @@
         }
     };
 
+    var spriteBallModel = null;
+    SpriteBallModel = (function SpriteBallModel() {
+
+        function SpriteBallModel(numPoints, radius) {
+            this.radius = radius;
+            this.numPoints = numPoints;
+            this.sphereCloud = this._buildSphere(numPoints, radius);
+        }
+
+        var proto = SpriteBallModel.prototype;
+
+        proto._buildSphere = function _buildSphere(numPoints, radius) {
+            var geo = new THREE.Geometry();
+            for (var i = 0; i < numPoints; i++) {
+                geo.vertices.push(this._getRandomPointOnSphere(radius));
+            }
+            sphereCloud = new THREE.PointCloud(geo, new THREE.PointCloudMaterial({
+                color : 0x7289FD,//0x3878A8,
+                size: 11
+            }));
+            return sphereCloud;
+        };
+
+        proto._getRandomPointOnSphere = function _getRandomPointOnSphere(radius) {
+            var p = X_AXIS.clone().applyAxisAngle(Y_AXIS, randomAngle());
+            p.applyAxisAngle(Y_AXIS.clone().cross(p), randomAngle());
+            p.multiplyScalar(radius);
+
+            return p;
+        };
+
+        proto.getPointCloud = function getPointCloud() {
+            return sphereCloud;
+        };
+
+
+
+        return SpriteBallModel;
+    })();
+
     var spriteBallCtrl = null;
     SpriteBallController = (function SpriteBallController() {
 
@@ -279,7 +319,7 @@
         }, false);
 
         scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2( 0x050515, 0.0007 );
+        scene.fog = new THREE.FogExp2( 0x050515, 0.00065 );
         camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
         camera.position.z = 1000;
 
@@ -290,10 +330,11 @@
         mesh = new THREE.Mesh( geometry, material );
         scene.add( mesh );
         */
-        var NUM_OBJECTS = 160;
-        var RADIUS = 500;
+        var NUM_OBJECTS = 220;
+        var RADIUS = 525;
         var UPDATE_MS = 33;
 
+//        spriteBallModel = new SpriteBallModel(NUM_OBJECTS, RADIUS);
         var spriteBallPointCloud = buildSphere(scene, NUM_OBJECTS, RADIUS);
 
 
@@ -325,8 +366,8 @@
             geo.vertices.push(getRandomPointOnSphere(radius));
         }
         sphereCloud = new THREE.PointCloud(geo, new THREE.PointCloudMaterial({
-            color : 0x6289FD,//0x3878A8,
-            size: 8
+            color : 0x7289FD,//0x3878A8,
+            size: 14
         }));
         scene.add(sphereCloud);
         return sphereCloud;

@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="5ff3bf1e-9d73-49cb-ad5d-afc50ec32533" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/index.html" afterPath="$PROJECT_DIR$/index.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="spriteball.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -26,8 +27,8 @@
       <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.7562724">
-              <caret line="328" column="19" selection-start-line="328" selection-start-column="19" selection-end-line="328" selection-end-column="19" />
+            <state vertical-scroll-proportion="0.3327032">
+              <caret line="369" column="20" selection-start-line="369" selection-start-column="20" selection-end-line="369" selection-end-column="20" />
               <folding />
             </state>
           </provider>
@@ -226,8 +227,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.7562724">
-          <caret line="328" column="19" selection-start-line="328" selection-start-column="19" selection-end-line="328" selection-end-column="19" />
+        <state vertical-scroll-proportion="0.3327032">
+          <caret line="369" column="20" selection-start-line="369" selection-start-column="20" selection-end-line="369" selection-end-column="20" />
           <folding />
         </state>
       </provider>
