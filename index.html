@@ -2,14 +2,25 @@
 <html>
 <head>
     <script src="threejs/three.min.js"></script>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 </head>
 <body>
 <style type="text/css">
+
+    html, body {
+        -ms-content-zooming: none;
+        touch-action: none;
+    }
+
     body {
+        position:absolute;
         overflow:hidden;
         margin:0;
         padding:0;
+        background-color:#050515;
     }
+
 </style>
 <script>
 
@@ -202,7 +213,7 @@
                 var forceMagnitude = netForce.length();
 
 //                console.log("Force: " + forceMagnitude);
-                point.applyAxisAngle(forcePlaneAxis, Math.min(Math.PI/80,forceMagnitude/100000)).normalize().multiplyScalar(this.radius);    // TODO should this be negative?
+                point.applyAxisAngle(forcePlaneAxis, Math.min(Math.PI/80,forceMagnitude/150000)).normalize().multiplyScalar(this.radius);    // TODO should this be negative?
                 points[i] = point;
                 //console.log(forceMagnitude);
             }
@@ -255,9 +266,20 @@
 
     function init() {
 
+        document.addEventListener('mousewheel', function(e) {
+            e.gesture.preventDefault();
+            // manually take care of the scroll
+            return false;
+            this.scrollLeft = Math.max(0, Math.min(maxX, this.scrollLeft - e.deltaX));
+            this.scrollTop = Math.max(0, Math.min(maxY, this.scrollTop - e.deltaY));
+            /*
+            e.preventDefault();
+            e.stopPropagation();
+            */
+        }, false);
 
         scene = new THREE.Scene();
-
+        scene.fog = new THREE.FogExp2( 0x050515, 0.0007 );
         camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
         camera.position.z = 1000;
 
@@ -268,21 +290,30 @@
         mesh = new THREE.Mesh( geometry, material );
         scene.add( mesh );
         */
-        var NUM_OBJECTS = 100;
+        var NUM_OBJECTS = 160;
         var RADIUS = 500;
+        var UPDATE_MS = 33;
 
         var spriteBallPointCloud = buildSphere(scene, NUM_OBJECTS, RADIUS);
 
 
         renderer = new THREE.WebGLRenderer();
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        renderer.setClearColor(0xFFFFFF,1);
+        renderer.setSize( window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x050515,1);
         var dom = renderer.domElement;
 
         spriteBallCtrl = new SpriteBallController(spriteBallPointCloud, dom, TouchData, NUM_OBJECTS, RADIUS);
+
+
+
+        document.addEventListener("dblclick", function() {
+            setInterval(function() {
+                spriteBallCtrl.applyForces();
+            }, UPDATE_MS);
+        });
         setInterval(function() {
-            spriteBallCtrl.updateRotation().applyForces();
-        }, 50);
+            spriteBallCtrl.updateRotation();
+        }, UPDATE_MS);
         document.body.appendChild( dom );
 
     }
@@ -294,8 +325,8 @@
             geo.vertices.push(getRandomPointOnSphere(radius));
         }
         sphereCloud = new THREE.PointCloud(geo, new THREE.PointCloudMaterial({
-            color : 0x083858,
-            size: 10
+            color : 0x6289FD,//0x3878A8,
+            size: 8
         }));
         scene.add(sphereCloud);
         return sphereCloud;
