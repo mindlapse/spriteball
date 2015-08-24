@@ -13,16 +13,17 @@
 <style type="text/css">
 
     html, body {
-        -ms-content-zooming: none;
-        touch-action: none;
-    }
+//        -ms-content-zooming: none;
+//        touch-action: none;
+    }	
 
     body {
         position:absolute;
         overflow:hidden;
         margin:0;
         padding:0;
-        background-color:#050515;
+		//background-color:#04040F;
+		background-color:white;
     }
 	
 	.addPoint {
@@ -70,31 +71,27 @@
         }, false);
 
         scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2( 0x050515, 0.00065 );
+        //scene.fog = new THREE.FogExp2( 0x050515, 0.00125 );
         camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
         camera.position.z = 1000;
 
-        /*
-        geometry = new THREE.BoxGeometry( 200, 200, 200 );
-        material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
-
-        mesh = new THREE.Mesh( geometry, material );
-        scene.add( mesh );
-        */
-        var NUM_OBJECTS = 220;
-		var RESERVE_POINTS = 50;
-        var RADIUS = 525;
-        var UPDATE_MS = 50;
+        var NUM_OBJECTS = 0;
+		var RESERVE_POINTS = 25;
+        var RADIUS = 540;
+        var UPDATE_MS = 60;
 
         spriteBallModel = buildSpriteBallModel(scene, NUM_OBJECTS, RESERVE_POINTS, RADIUS);
 
         renderer = new THREE.WebGLRenderer();
         renderer.setSize( window.innerWidth, window.innerHeight);
-        renderer.setClearColor(0x04040F,1);
+        renderer.setClearColor(0xFFFFFF,1); //(0x04040F,1);
         var dom = renderer.domElement;
 
         spriteBallCtrl = new SpriteBallController(spriteBallModel, dom, TouchData, NUM_OBJECTS, RADIUS);
 
+		// Test
+
+		// /Test
 
 
         document.addEventListener("dblclick", function() {
@@ -112,11 +109,42 @@
 	function buildSpriteBallModel(scene, numPoints, reservePoints, radius) {
 		var geo = new THREE.Geometry();
         var pointCloud = new THREE.PointCloud(geo, new THREE.PointCloudMaterial({
-            color : 0xB2C9FD,//0x3878A8,
-            size: 11
+            color : 0x0, //0x22C9FD,//0x3878A8,
+            size: 15
         }));
 		var spriteBallModel = new SpriteBallModel(pointCloud, numPoints, reservePoints, radius);
         scene.add(pointCloud);
+		
+		THREE.ImageUtils.crossOrigin = 'localhost';
+		var mapOverlay = THREE.ImageUtils.loadTexture('images/profile.png');
+		
+		
+		// instantiate a loader
+		/*
+		var loader = new THREE.TextureLoader();
+		THREE.ImageUtils.
+		// load a resource
+		loader.load(
+			// resource URL
+			'images/profile.png',
+			// Function when resource is loaded
+			function ( texture ) {
+				for (var i = 0; i < reservePoints; i++) {
+					spriteBallModel.addSprite(texture);
+				}
+		
+			},
+			// Function called when download progresses
+			function ( xhr ) {
+				console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+			},
+			// Function called when download errors
+			function ( xhr ) {
+				console.log( 'An error happened' );
+			}
+		);
+		*/
+		
         return spriteBallModel;
 
 	}

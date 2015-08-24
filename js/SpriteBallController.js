@@ -9,6 +9,7 @@ var SpriteBallController = (function SpriteBallController() {
     var P3 = THREE.Vector3;
     var V3 = THREE.Vector3;
     var M4 = THREE.Matrix4;
+	var PI_DIVIDED_BY_3 = Math.PI/3;
 
 	/*
 	 * spriteBallModel   : A spriteBallModel
@@ -40,6 +41,7 @@ var SpriteBallController = (function SpriteBallController() {
 	_b2 = new P3();
 
 	var Util = {
+		PI_DIVIDED_BY_3 : Math.PI/3,
 
 		// Computes the angle between the two unit Vector3s
 		getRadians : function getRadians(v3a, v3b) {
@@ -103,11 +105,14 @@ var SpriteBallController = (function SpriteBallController() {
 				// this is the distance between them on the sphere.
 				var arcDistance = Util.getRadians(point, otherPoint);
 
-				// Calculate the tangent in the direction of the closest path
-				var w = Util.getShortCircleDirection(point, otherPoint);
+				if (arcDistance < PI_DIVIDED_BY_3) {
 
-				if (w != null) {
-					netForce.add(w.multiplyScalar(Math.PI/arcDistance));
+					// Calculate the tangent in the direction of the closest path
+					var w = Util.getShortCircleDirection(point, otherPoint);
+
+					if (w != null) {
+						netForce.add(w.multiplyScalar(Math.PI / arcDistance));
+					}
 				}
 			}
 
